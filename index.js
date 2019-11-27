@@ -31,18 +31,7 @@ form.addEventListener('submit', event => {
 
 });
 
-function formatQueryString(params) {
-  console.log('formatQueryString() ran');
-
-  // create arbitrary object to store params in
-  const queryItems = Object.keys(params)
-    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
-  console.log(queryItems);
-  console.log(queryItems.join('&'));
-  return queryItems.join('&')
-}
-
-function getParks(stateCodes, maxResults) {
+function getParks(stateCodes, maxResults = 10) {
   console.log('getParks() ran');
   console.log(`stateCodes are: ${stateCodes} and maxResults is: ${maxResults}`);
   // stateCode=ca%2Caz&limit=10&api_key=U5hOgaPaznMv3nOoI3qmyYxC5fXU22VJI2nVscmr
@@ -56,5 +45,63 @@ function getParks(stateCodes, maxResults) {
   const queryUrl = formatQueryString(params);
   const url = baseUrl + '?' + queryUrl;
 
-  console.log(url);
+  fetch(url)
+    .then(response => {
+      if (response.ok) {
+        return response.json()
+      }
+      throw new Error(response.statusText)
+    })
+    .then(responseJson => displayResults(responseJson))
+
 }
+
+function displayResults(responseJson) {
+  console.log('displayResults() ran');
+  console.log(responseJson);
+
+  clearResults();
+
+  for (let i = 0; i < responseJson.data.length; i++) {
+    console.log(responseJson.data[i].fullName);
+    console.log(responseJson.data[i].description);
+    console.log(responseJson.data[i].url);
+
+    let newElement = document.createElement('div');
+    newElement.innerHTML = `
+                            <p>fullName is: ${responseJson.data[i].fullName}</p>
+                            <p>description is: ${responseJson.data[i].description}</p>
+                            <p>url is: ${responseJson.data[i].url}</p>
+`;
+
+    let referenceElement = document.querySelector('div#listResults');
+
+    insertAfter(newElement, referenceElement)
+  }
+
+}
+
+function insertAfter(el, referenceNode) {
+  referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
+}
+
+function clearResults() {
+  console.log('clearResults() ran');
+
+  // let c = document.getElementById("listResults");
+  // while (c.lastChild) c.removeChild(c.lastChild);
+
+
+}
+
+function formatQueryString(params) {
+  console.log('formatQueryString() ran');
+
+  // create arbitrary object to store params in
+  const queryItems = Object.keys(params)
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+  console.log(queryItems);
+  console.log(queryItems.join('&'));
+  return queryItems.join('&')
+}
+
